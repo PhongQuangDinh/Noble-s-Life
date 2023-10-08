@@ -16,7 +16,6 @@ namespace NobleLife
 {
     public class Castle_Patches
     {
-        public static bool ErrorCheck = false;
         public static bool generateNewMap_Prefix(bool pClear = false)
         {
             Castle.castleList.Clear();
@@ -85,7 +84,7 @@ namespace NobleLife
             if (!isCastlePart(null, 2, pData.asset_id))
                 return true;
             WorldTile tileSimple = World.world.GetTileSimple(pData.mainX, pData.mainY);
-            if (pData.cityID.Equals("")) // __instance is obviously the worst case ever, 2 options,repair it or remove it and make new one
+            if (pData.cityID.Equals("")) // Obviously the worst case ever, 2 options,repair it or remove it and make new one
             {
                 //Debug.Log("we got fucked up no city found");
                 var closest = World.world.cities.list.GetRandom();

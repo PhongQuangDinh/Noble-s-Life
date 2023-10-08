@@ -37,7 +37,7 @@ namespace NobleLife
     {
         public const string pluginGuid = "phong.worldbox.NobleLife";
         public const string pluginName = "ModdingCastle";
-        public const string pluginVersion = "0.0.0.1";
+        public const string pluginVersion = "0.0.0.2";
         public enum MovingDir { up, down, left, right, up_left, up_right, down_left, down_right, stop };
         public WorldTile mouseTile => MapBox.instance.getMouseTilePos();
         public static Actor controlledActor = null;
@@ -221,6 +221,8 @@ namespace NobleLife
             patch = AccessTools.Method(typeof(Warband), "drawBuildingsLightWindows_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
 
+
+
             Castle.init();
 
             //var cachedSprites = Reflection.GetField(typeof(SpriteTextureLoader), null, "cached_sprites") as Dictionary<string, Sprite>;
@@ -241,17 +243,6 @@ namespace NobleLife
             //}
 
         }
-        //public static bool setTemplate_Prefix(Building __instance, BuildingAsset pTemplate)
-        //{
-        //    __instance.asset = pTemplate;
-        //    __instance.data.asset_id = __instance.asset.id;
-        //    if (!string.IsNullOrEmpty(__instance.asset.kingdom))
-        //    {
-        //        __instance.setKingdom(World.world.kingdoms.dict_hidden[__instance.asset.kingdom], true);
-        //    }
-        //    __instance.m_transform.name = __instance.asset.id;
-        //    return false;
-        //}
         public static bool tryToMakeWarrior_Prefix(ref bool __result, City __instance, Actor pActor)
         {
             if (__instance.isArmyFull())

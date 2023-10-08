@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace NobleLife
 {
-    public class Castle
+    public class Castle //: Building // a castle is a building that contain a group of other buildings as part of it
     {
         public City mainCity = null;
         public WorldTile mainTile = null;
@@ -102,6 +102,7 @@ namespace NobleLife
             AssetManager.buildings.loadSprites(gate);
 
             gate = AssetManager.buildings.clone("castle_toprightcorner", "!city_building");
+            // gate.upgradeTo = "toprightcorner_lvl2";
             gate.type = "rightcorner";
             gate.base_stats[S.health] = 5000;
             gate.fundament = new BuildingFundament(0, 0, 0, 0);
