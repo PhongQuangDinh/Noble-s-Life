@@ -21,11 +21,6 @@ namespace NobleLife
             Castle.castleList.Clear();
             return true;
         }
-        public static bool startLoadSlot_Prefix()
-        {
-            Castle.castleList.Clear();
-            return true;
-        }
         public static bool removeZone_Prefix(TileZone pZone, City __instance)
         {
             if (!Castle.castleList.ContainsKey(__instance)) return true;

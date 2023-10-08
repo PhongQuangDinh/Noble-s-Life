@@ -35,9 +35,9 @@ namespace NobleLife
     [ModEntry]
     public class main : MonoBehaviour
     {
-        public const string pluginGuid = "phong.worldbox.NobleLife";
-        public const string pluginName = "ModdingCastle";
-        public const string pluginVersion = "0.0.0.2";
+        public static string pluginName = "ModdingCastle";
+        public static string pluginGuid = "phong.worldbox.NobleLife";
+        public static string pluginVersion = "0.0.0.2";
         public enum MovingDir { up, down, left, right, up_left, up_right, down_left, down_right, stop };
         public WorldTile mouseTile => MapBox.instance.getMouseTilePos();
         public static Actor controlledActor = null;
@@ -47,14 +47,11 @@ namespace NobleLife
         public static string errorLog = "";
         public void Awake() // first frame
         {
+            SaveCastle.Awake();
+
             Harmony harmony;
             MethodInfo original;
             MethodInfo patch;
-
-            harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(SaveManager), "startLoadSlot"); // update
-            patch = AccessTools.Method(typeof(Castle_Patches), "startLoadSlot_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
 
             //harmony = new Harmony(pluginGuid); // within warband
             //original = AccessTools.Method(typeof(Actor), "checkEnemyTargets"); // consider fixing
