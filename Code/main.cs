@@ -48,44 +48,20 @@ namespace NobleLife
         public void Awake() // first frame
         {
             SaveCastle.Awake();
+            Warband.Awake();
 
             Harmony harmony;
             MethodInfo original;
             MethodInfo patch;
-
-            //harmony = new Harmony(pluginGuid); // within warband
-            //original = AccessTools.Method(typeof(Actor), "checkEnemyTargets"); // consider fixing
-            //patch = AccessTools.Method(typeof(Warband), "checkEnemyTargets_Prefix");
-            //harmony.Patch(original, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid); // within warband
-            original = AccessTools.Method(typeof(Actor), "b5_checkPathMovement"); // update
-            patch = AccessTools.Method(typeof(Warband), "b5_checkPathMovement_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
 
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(City), "removeZone"); // 
             patch = AccessTools.Method(typeof(Castle_Patches), "removeZone_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
 
-            //harmony = new Harmony(pluginGuid); // within warband
-            //original = AccessTools.Method(typeof(Actor), "behaviourActorTargetCheck"); // still under fixing
-            //patch = AccessTools.Method(typeof(Warband), "behaviourActorTargetCheck_Prefix");
-            //harmony.Patch(original, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid); // within warband
-            original = AccessTools.Method(typeof(BehFightCheckEnemyIsOk), "execute"); //
-            patch = AccessTools.Method(typeof(Warband), "BehFightCheckEnemyIsOk_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(MapBox), "generateNewMap"); // 
             patch = AccessTools.Method(typeof(Castle_Patches), "generateNewMap_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(City), "finishCapture"); //
-            patch = AccessTools.Method(typeof(main), "finishCapture_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
 
             harmony = new Harmony(pluginGuid);
@@ -144,28 +120,18 @@ namespace NobleLife
             harmony.Patch(original, null, new HarmonyMethod(patch));
 
             harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(BehGoToActorTarget), "execute"); //
-            patch = AccessTools.Method(typeof(Warband), "GoToActorTarget_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(BehCityGetRandomDangerZone), "execute"); //
             patch = AccessTools.Method(typeof(Castle_Patches), "GetDangerZone_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
 
             harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(SimObjectsZones), "addUnit"); //
+            original = AccessTools.Method(typeof(SimObjectsZones), "addUnit"); // for Alarm raise
             patch = AccessTools.Method(typeof(Castle_Patches), "addUnit_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
 
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(Building), "getHit"); //
             patch = AccessTools.Method(typeof(Castle_Patches), "BuildingGetHit_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(BuildingManager), "loadObject"); //
-            patch = AccessTools.Method(typeof(Castle_Patches), "loadBuildingObject_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
 
             harmony = new Harmony(pluginGuid);
@@ -192,33 +158,6 @@ namespace NobleLife
             original = AccessTools.Method(typeof(BaseSimObject), "canAttackTarget"); //
             patch = AccessTools.Method(typeof(Castle_Patches), "canAttackTarget_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(BaseSimObject), "findEnemyObjectTarget"); //
-            patch = AccessTools.Method(typeof(Warband), "findEnemyObjectTarget_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(BuildingRenderer), "drawBuilding"); //
-            patch = AccessTools.Method(typeof(Warband), "drawBuilding_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(Building), "isUnderConstruction"); //
-            patch = AccessTools.Method(typeof(Warband), "isUnderConstruction_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(MapIconLibrary), "drawShadowsBuildings"); //
-            patch = AccessTools.Method(typeof(Warband), "drawShadowsBuildings_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-
-            harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(MapIconLibrary), "drawBuildingsLightWindows"); //
-            patch = AccessTools.Method(typeof(Warband), "drawBuildingsLightWindows_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-
-
 
             Castle.init();
 
@@ -424,21 +363,6 @@ namespace NobleLife
             }
             return true;
         }
-        public static bool finishCapture_Prefix(City __instance, Kingdom pKingdom)
-        {
-            __instance.clearCapture();
-            __instance.recalculateNeighbourCities();
-            using (ListPool<War> wars = pKingdom.getWars())
-            {
-                Kingdom kingdom = __instance.findKingdomToJoinAfterCapture(pKingdom, wars);
-                if (!__instance.checkRebelWar(kingdom, wars))
-                {
-                    kingdom.data.timestamp_new_conquest = World.world.getCurWorldTime();
-                }
-                __instance.joinAnotherKingdom(kingdom);
-            }
-            return false;
-        }
         public static void makeMove(WorldTile nextTile, Actor dude)
         {
             if (nextTile == null)
@@ -582,7 +506,11 @@ namespace NobleLife
         }
         public void Update()
         {
-
+            //if (Input.GetKey(KeyCode.K))
+            //{
+            //    String text = (Castle.castleList.Count > 0) ? Castle.castleList.First().Value.mainCity.name + " + health: " + Castle.castleList.First().Value.data.curHealth : " Empty "; //;
+            //    WorldTip.instance.show("Castle list " + Castle.castleList.Count + " data list: " + text, false, "top", 1);
+            //}
             if (MapBox.instance.getActorNearCursor() != null && Input.GetKey(KeyCode.R) && controlledActor == null)
             {
                 Actor temp = MapBox.instance.getActorNearCursor();
@@ -604,30 +532,43 @@ namespace NobleLife
                 {
                     var city = controlledActor.currentTile.zone.city;
                     //WorldTip.instance.show("Total castles: " + Castle.castleList.Count, false, "top", 1);
+
                     if (Castle.castleList.ContainsKey(city))
                     {
                         var pCastle = Castle.castleList[city];
-                        if (Input.GetKey(KeyCode.P))
-                            pCastle.leftcorner.getHit(10000);
+                        //if (Input.GetKey(KeyCode.P))
+                        //    pCastle.leftcorner.getHit(10000);
                         //float distance = 1f;
                         //if (Toolbox.DistTile(controlledActor.currentTile, pCastle.mainTile) < distance)
                         //    WorldTip.instance.show("U are within the radius of " + distance, false, "top", 1f);
                         //if (pCastle.insideCastle(controlledActor) && pCastle.gateBottom != null)
                         //    WorldTip.instance.show("U are inside " + city.name + " castle courtyard\n" + "Gate health: " + pCastle.gateBottom.data.health, false, "top", 1);
                         //else if (pCastle.gateBottom == null && pCastle.insideCastle(controlledActor))
-                        //    WorldTip.instance.show("The gate is null idk", false,"top", 1);
-
+                        //    WorldTip.instance.show("The gate is null idk", false, "top", 1);
                         //else
                         //    WorldTip.instance.show("U are outside of the castle " + city.name, false, "top", 1);
+
+                        //if (Input.GetKey(KeyCode.L))
+                        //{
+                        //    //Castle.castleList[city].gateTile.setTileType(TileLibrary.mountains);
+                        //    pCastle.OpenGate();
+
+                        //    if (pCastle.GateClosed) Debug.Log(" The fucking gate is closed ");
+                        //    else Debug.Log("The gate is not close");
+                        //}
+                        //if (Input.GetKey(KeyCode.LeftControl))
+                        //{
+                        //    //Castle.castleList[city].gateTile.setTileType(TileLibrary.mountains);
+                        //    pCastle.CloseGate();
+                        //    if (pCastle.GateClosed) Debug.Log(" The fucking gate is closed ");
+                        //    else Debug.Log("The gate is not close");
+                        //}
                     }
+
                     //if (Castle.castleList[city].Alert)
                     //    WorldTip.instance.show("The city is on alert", false, "top",1);
-                    if (Input.GetKey(KeyCode.K))
-                        //Castle.castleList[city].gateTile.setTileType(TileLibrary.mountains);
-                        Castle.castleList[city].OpenGate();
-                    if (Input.GetKey(KeyCode.L))
-                        //Castle.castleList[city].gateTile.setTileType(TileLibrary.mountains);
-                        Castle.castleList[city].CloseGate();
+                    
+
                     //else WorldTip.instance.show("No castle here", false, "top", 1);
                 }
                 //else if (controlledActor.currentTile.building != null && Castle_Patches.isCastlePart(controlledActor.currentTile.building))

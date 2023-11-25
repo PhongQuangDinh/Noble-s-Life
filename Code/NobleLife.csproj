@@ -84,10 +84,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BehRetreatCastle.cs" />
     <Compile Include="Castle.cs" />
+    <Compile Include="CastleData.cs" />
     <Compile Include="Castle_Patches.cs" />
     <Compile Include="main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveCastle.cs" />
     <Compile Include="Warband.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

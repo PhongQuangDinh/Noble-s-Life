@@ -74,56 +74,6 @@ namespace NobleLife
             if (!isCastlePart(pBuilding)) return true;
             return false;
         }
-        public static bool loadBuildingObject_Prefix(ref Building __result, BuildingData pData, Building pPrefab = null)
-        {
-            if (!isCastlePart(null, 2, pData.asset_id))
-                return true;
-            WorldTile tileSimple = World.world.GetTileSimple(pData.mainX, pData.mainY);
-            if (pData.cityID.Equals("")) // Obviously the worst case ever, 2 options,repair it or remove it and make new one
-            {
-                //Debug.Log("we got fucked up no city found");
-                var closest = World.world.cities.list.GetRandom();
-                foreach (var city in World.world.cities.list)
-                {
-                    if (Castle.castleList.ContainsKey(city)) continue;
-                    var v1 = Toolbox.DistVec3(closest.cityCenter, tileSimple.posV);
-                    var v2 = Toolbox.DistVec3(city.cityCenter, tileSimple.posV);
-                    if (v1 > v2) closest = city;
-                }
-                if (tileSimple.zone.city == null)
-                    closest.addZone(tileSimple.zone);
-                pData.cityID = closest.data.id;
-
-                if (!Castle.castleList.ContainsKey(closest)) Castle.castleList.Add(closest, new Castle().loadBase(tileSimple, closest));
-                var castle = Castle.castleList[closest];
-                if (pData.asset_id == "castle_gate")
-                {
-                    castle.loadBase(tileSimple, closest);
-                    var gateTile = MapBox.instance.GetTile(tileSimple.pos.x, tileSimple.pos.y + 2);
-                    gateTile.setTileTypes(TileLibrary.soil_low, TopTileLibrary.biomass_low);
-                }
-                __result = castle.loadCastlePart(pData.asset_id, tileSimple, pData);
-                return false;
-            }
-            else // __instance is the best way to load and rebuild castle from save
-            {
-                var pCity = World.world.cities.get(pData.cityID);
-                if (!Castle.castleList.ContainsKey(pCity)) Castle.castleList.Add(pCity, new Castle().loadBase(tileSimple, pCity));
-                var castle = Castle.castleList[pCity];
-                if (pData.asset_id == "castle_gate")
-                {
-                    //Debug.Log("Open da gate of " + pCity.name);
-                    castle.loadBase(tileSimple, pCity);
-                    // nah god
-                    var gateTile = MapBox.instance.GetTile(tileSimple.pos.x, tileSimple.pos.y + 2);
-                    gateTile.setTileTypes(TileLibrary.soil_low, TopTileLibrary.biomass_low);
-                }
-                __result = castle.loadCastlePart(pData.asset_id, tileSimple, pData);
-                //Debug.Log(pData.asset_id + " of " + World.world.cities.get(pData.cityID).name);
-            }
-            return false;
-            //return true; // use __instance when things broken and house not spawn ok
-        }
         public static bool drawDemolish_Prefix(WorldTile pTile, string pPowerID)
         {
             if (pTile.building != null && !pTile.building.asset.ignoreDemolish && pTile.building.asset.buildingType == BuildingType.None &&
@@ -204,13 +154,14 @@ namespace NobleLife
                     if (pType == AttackType.Weapon && __instance.asset.sound_hit != string.Empty)
                         MusicBox.playSound(__instance.asset.sound_hit, __instance.currentTile, false, true);
                 }
+                else Debug.Log(__instance.city.name + " gate is breached through by attackers");
             }
             else if (__instance.city != null) // this is where siege engine show their power
             {
                 var castle = Castle.castleList[__instance.city];
                 //WorldTip.instance.show("Castle " + __instance.city.name + " health: " + castle.curHealth, false, "top",1f);
-                if (castle.curHealth > 0)
-                    castle.curHealth -= (int)pDamage;
+                if (castle.data.curHealth > 0)
+                    castle.data.curHealth -= (int)pDamage;
                 else
                 {
                     var city = __instance.city;
@@ -230,16 +181,12 @@ namespace NobleLife
         }
         public static void updateCity_Postfix(City __instance, float pElapsed)
         {
+            if (__instance == null) return;
             if (Castle.castleList.ContainsKey(__instance))
             {
-                //var castle = Castle.castleList[__instance];
-                //if (!castle.isSieged() || castle.GateBroken)
-                //{
-                //    var gateTile = castle.gateTile;
-                //    MapAction.terraformMain(gateTile, TileLibrary.soil_low);
-                //    MapAction.terraformTop(gateTile, TopTileLibrary.biomass_low);
-                //}
-                Castle.castleList[__instance].Behaviour(); // let see how fast is __instance thing and see if it neccessary for such speed
+                var castle = Castle.castleList[__instance];
+                if (castle == null) return;
+                Castle.castleList[__instance].Behaviour();
             }
             //if (containPartOfCastle(__instance) && !Castle.castleList.ContainsKey(__instance))
             //    Debug.Log("We got bug here in __instance castle " + __instance.name);
@@ -283,12 +230,34 @@ namespace NobleLife
                 __result = BehResult.Continue;
                 return;
             }
-            if (Toolbox.randomChance(1f) && mapRegion.tiles.Count > 0) // 100% that leader will defend at the castle
+            if (Toolbox.randomChance(1f) && mapRegion.tiles.Count > 0) // 100% that leader will defend at the castle on free time
             {
-                pActor.beh_tile_target = castle.centerTile;
-                if (castle.GateClosed) castle.OpenGate();
-                __result = BehResult.Continue;
-                return;
+                if (isAtOwnCity(pActor)) // for defenders on free time
+                {
+                    pActor.beh_tile_target = castle.centerTile;
+                    castle.OpenGate();
+                    __result = BehResult.Continue;
+                    return;
+                }
+                else if (pActor.currentTile.zone.city != null && 
+                    Castle.castleList.ContainsKey(pActor.currentTile.zone.city)) // for attackers on enemy territory
+                {
+                    if (pActor.kingdom.isEnemy(pActor.currentTile.zone.city.kingdom))
+                    {
+                        var target_castle = Castle.castleList[pActor.currentTile.zone.city];
+                        var targetTile = (target_castle.GateClosed) ? target_castle.mainTile : target_castle.centerTile;
+                        pActor.beh_tile_target = targetTile;
+                    }
+                    else if (pActor.currentTile.zone.city.kingdom == pActor.kingdom &&
+                        pActor.currentTile.zone.city.isInDanger()) // save other castle as well
+                    {
+                        var target_castle = Castle.castleList[pActor.currentTile.zone.city];
+                        var targetTile = (target_castle.GateClosed) ? target_castle.mainTile : target_castle.centerTile;
+                        pActor.beh_tile_target = targetTile;
+                    }
+                    __result = BehResult.Continue;
+                    return;
+                }
             }
             // the rest will start patrolling area
             if (mapRegion.neighbours.Count > 0 && Toolbox.randomBool())
@@ -303,7 +272,8 @@ namespace NobleLife
         }
         public static void TileNearLeader_Postfix(ref BehResult __result, Actor pActor)
         {
-            if (pActor.unit_group == null || !((Object)pActor.unit_group.groupLeader != (Object)null))
+            // we may give command to attack castle gate maybe
+            if (pActor.unit_group == null || !pActor.unit_group.isGroupLeaderAlive())
             {
                 __result = BehResult.Stop;
                 return;
@@ -314,7 +284,8 @@ namespace NobleLife
             if (currentPath != null && currentPath.Count > 0) // __instance mean the leader is moving with path
             {
                 //Debug.Log("Leader has path " + pActor.city.data.name);
-                random = currentPath[currentPath.Count - 1].region.tiles.GetRandom<WorldTile>();
+                random = currentPath[(int)(currentPath.Count * 0.75)].region.tiles.GetRandom<WorldTile>(); // origin
+                // random = leader.currentTile.region.tiles.GetRandom<WorldTile>(); // marching army with leader
             }
             else
             {
@@ -322,7 +293,11 @@ namespace NobleLife
                 if (pActor.city != null && Castle.castleList.ContainsKey(pActor.city))
                 {
                     var castle = Castle.castleList[pActor.city];
-                    if (castle.insideCastle(leader)) // leader inside castle
+                    if (castle.Alert)
+                    {
+                        random = Castle.getInfantryPosRand(castle);
+                    }
+                    else if (castle.insideCastle(leader)) // leader inside castle
                     {
                         random = Castle.getInfantryPosRand(castle);
                     }
@@ -361,11 +336,15 @@ namespace NobleLife
             if (pActor.city != null && Castle.castleList.ContainsKey(pActor.city) && Castle.castleList[pActor.city].Alert
                 )
             {
+                var castle = Castle.castleList[pActor.city];
                 // if the actor is already inside the castle we then let the game working on the rest until we are sure 
                 // that the castle gate is closed, they may come out but soon they will have to return to the interior
-                if (Castle.castleList[pActor.city].insideCastle(pActor))
+                if (castle.insideCastle(pActor))
                     return;
-                if (Castle.castleList[pActor.city].GateClosed) // too late to come
+                if (castle.GateClosed) // too late to come
+                    return;
+                // avoid useless civilian walk through the war zone
+                if (castle.data.sameRaceWar && !pActor.isProfession(UnitProfession.Warrior))
                     return;
                 // temporary removement
                 pActor.beh_actor_target = null;
@@ -398,27 +377,30 @@ namespace NobleLife
                         if (isAtOwnCity(city.army.groupLeader) && Castle.castleList.ContainsKey(city)) // if captain is guarding at city
                         {
                             if (pActor.race != city.race)
-                                if (Castle.castleList[city].sameRaceWar)
-                                    Castle.castleList[city].sameRaceWar = false;
+                            {
+                                if (Castle.castleList[city].data.sameRaceWar)
+                                    Castle.castleList[city].data.sameRaceWar = false;
+                                else Castle.castleList[city].data.sameRaceWar = true;
+                            }
                             if (pActor.isProfession(UnitProfession.Warrior) && pActor.unit_group != null)
                             {
-                                if (pActor.unit_group.countUnits() > city.army.countUnits())
+                                if (pActor.unit_group.countUnits() / 0.5f > city.army.countUnits())
                                 {
                                     //Debug.Log("Alert of massive invaders for " + city.data.name);
                                     //Debug.Log(city.name + " raise alert for defenders " + pActor.name);
-                                    if (!Castle.castleList[city].Alert) Castle.castleList[city].Alert = true;
+                                    if (!Castle.castleList[city].Alert) Castle.castleList[city].data.Alert = true;
                                 }
-                                //else if (Castle.castleList[city].Alert)
-                                //{
-                                //    Castle.castleList[city].Alert = false;
-                                //    if (Castle.castleList[city].GateClosed)
-                                //        Castle.castleList[city].OpenGate();
-                                //}
+                                else if (Castle.castleList[city].Alert)
+                                {
+                                    Castle.castleList[city].data.Alert = false;
+                                    if (Castle.castleList[city].GateClosed)
+                                        Castle.castleList[city].OpenGate();
+                                }
                             }
                         }
                         else if (Castle.castleList.ContainsKey(city)) // main army is not at the city, must defend at all cost
                         {
-                            Castle.castleList[city].Alert = true;
+                            Castle.castleList[city].data.Alert = true;
                             //Debug.Log(city.name + " alert without army at town " + pActor.name);
                         }
                     }
@@ -433,17 +415,26 @@ namespace NobleLife
             {
                 if (Castle.castleList[city].insideCastle(pActor)) // you may do something for defenders inside castle
                 {
+                    //pActor.ai.setTask("defend the fucking castle maybe");
                     __result = BehResult.Stop;
                     return;
                 }
                 else if (!Castle.castleList[city].GateClosed)
                 {
-                    pActor.beh_tile_target = Castle.getInfantryPosRand(Castle.castleList[city]);
-                    // temporary removement
-                    pActor.beh_actor_target = null;
-                    pActor.clearAttackTarget();
+                    // Debug.Log("retreat to castle " + city.name);
+                    if (pActor.ai.task.id != "retreat_to_Castle")
+                    {
+                        pActor.clearTasks();
+                        pActor.ai.setTaskBehFinished();
+                        pActor.ai.setTask("retreat_to_Castle", true, true); // this one is good now but idk why da hell
+                    }
+                    // pActor.beh_tile_target = Castle.getInfantryPosRand(Castle.castleList[city]);
 
-                    __result = BehResult.Stop;
+                    // temporary removement
+                    //pActor.beh_actor_target = null;
+                    //pActor.clearAttackTarget();
+                    pActor.goTo(Castle.getInfantryPosRand(Castle.castleList[city]));
+                    __result = BehResult.Continue;
                     return;
                 }
             }

@@ -17,6 +17,7 @@ namespace NobleLife
 {
     public class Castle //: Building // a castle is a building that contain a group of other buildings as part of it
     {
+        public CastleData data = new CastleData(); // should be null
         public City mainCity = null;
         public WorldTile mainTile = null;
         public WorldTile centerTile = null;
@@ -28,20 +29,16 @@ namespace NobleLife
 
         //public List<Actor> insideTroops = new List<Actor>();
         public Building gateBottom = null; // 
-
         public Building leftcorner = null;
         public Building rightcorner = null ;
         public Building horizontalWall = null;
 
-        public bool Alert = false;
-        public bool sameRaceWar = true;
-        public bool isDemolished = false;
-
-        public int base_health = 10000; // total health
-        public int curHealth = 10000;
+        //public bool Alert = false;
+        //public bool sameRaceWar = true;
 
         public static Dictionary<City, Castle> castleList = new Dictionary<City, Castle>();
         public static ConstructionCost cost = new ConstructionCost(0, 0, 0, 100);
+        public static ConstructionCost repair_gate = new ConstructionCost(10,10,0,10);
 
         public static void addNewCastle(WorldTile curTile, City fixCity = null)
         {
@@ -157,7 +154,7 @@ namespace NobleLife
         }
         public void repairCastle()
         {
-            curHealth = base_health;
+            data.curHealth = data.base_health;
             gateBottom.data.health = (int)gateBottom.stats[S.health];
         }
         public static void switchedKingdomCastle_Postfix(City __instance)
@@ -358,6 +355,35 @@ namespace NobleLife
             }
             return true;
         }
+        public bool IsGoodToClose()
+        {
+            int inside = 0;
+            if (Castle_Patches.isAtOwnCity(mainCity.army.groupLeader))
+            {
+                var list = mainCity.army.units._hashSet;
+                for (int i = 0; i < mainCity.army.units.Count; i++)
+                    if (insideCastle(list.ElementAt(i))) inside++;
+                if (!data.sameRaceWar)
+                {
+                    var list1 = mainCity.army.units._hashSet;
+                    for (int i = 0; i < mainCity.army.units.Count; i++)
+                        if (insideCastle(list1.ElementAt(i))) inside++;
+                    return inside > (mainCity.units.Count / 3); // && mainCity.leader is inside as well
+                }
+                return (inside > mainCity.army.countUnits() / 3) && insideCastle(mainCity.army.groupLeader);
+            }
+            return inside > (mainCity.army.countUnits() * 0.75); // && mainCity.leader is inside as well
+        }
+        public bool isSieged()
+        {
+            // we may calculate the amount of enemies and give out the situation or the state
+            //foreach (var zone in mainCity.danger_zones) 
+            //{
+            //    foreach (var tile in zone.tiles.ToHashSet())
+            //        if (tile._units.Count)
+            //}
+            return (mainCity.danger_zones.Count > 3);
+        }
         public void Behaviour()
         {
             if (mainCity == null || !mainCity.data.alive || hasNullCastlePart())
@@ -367,27 +393,37 @@ namespace NobleLife
                 //Debug.Log("remove castle " + mainCity.name);
             }
             else switchColor(mainCity.kingdom);
-            if (mainCity.army != null && mainCity.army.groupLeader != null && mainCity.leader != null)
-            {
-                if (Castle_Patches.isAtOwnCity(mainCity.army.groupLeader) && !insideCastle(mainCity.army.groupLeader) && 
-                    GateClosed) 
-                    OpenGate();
 
-                if (GateBroken || badCondition(gateBottom)) OpenGate();
-                else if (Alert)
-                {
-                    if (insideCastle(mainCity.army.groupLeader)) CloseGate();
-                }
-            }
             //BehGuard();
-            if (GateBroken) OpenGate();
+            if (GateBroken && mainCity.hasEnoughResourcesFor(repair_gate))
+            {
+                mainCity.spendResourcesFor(repair_gate);
+                gateBottom.data.health = (int)gateBottom.stats[S.health];
+                //if (curHealth < base_health) curHealth = base_health;
+            }
             if (!isSieged())
             {
-                if (Alert) Alert = false;
-                if (GateBroken) gateBottom.data.health = (int)gateBottom.stats[S.health];
-                //if (curHealth < base_health) curHealth = base_health;
-                if (GateClosed) OpenGate();
+                if (Alert) data.Alert = false;
+                OpenGate();
             }
+            else
+            {
+                if (GateBroken || badCondition(gateBottom))
+                {
+                    // Debug.Log(mainCity.name + " gate is broken");
+                    OpenGate();
+                }
+                else if (Alert && !GateClosed) // avoid multiple loop as possible
+                {
+                    if (IsGoodToClose())
+                    {
+                        // Debug.Log(mainCity.name + " close the gate for god sake");
+                        CloseGate();
+                    }
+                    else OpenGate();
+                }
+            }
+
             if (Alive)
             {
                 checkZone(gateBottom);
@@ -426,10 +462,6 @@ namespace NobleLife
         {
             return ((gateBottom == null || gateBottom.isRuin()) && (leftcorner == null || leftcorner.isRuin()) && (rightcorner == null || rightcorner.isRuin()) && 
                 (horizontalWall == null || horizontalWall.isRuin()));
-        }
-        public bool isSieged()
-        {
-            return (mainCity.isInDanger() || mainCity.isGettingCaptured());
         }
         public void switchColor(Kingdom pKingdom)
         {
@@ -589,6 +621,28 @@ namespace NobleLife
                 //switchColor(mainCity.kingdom);
             }
         }
+        public Castle loadFromData(CastleData pData)
+        {
+            if (data == null) return null;
+            mainCity = World.world.cities.get(pData.mainCity_id);
+            data = pData;
+            // WorldTile getTilefromData(BuildingData dat) { return World.world.GetTileSimple(dat.mainX, dat.mainY); }
+            gateBottom = World.world.buildings.get(pData.gateBottom.id);//loadCastlePart(pData.gateBottom.asset_id, getTilefromData(pData.gateBottom), pData.gateBottom);  //mainCity.getBuildingType("castle_gate");
+            if (gateBottom == null)
+                return null;
+            gateTile = MapBox.instance.GetTile(gateBottom.currentTile.pos.x, gateBottom.currentTile.pos.y + 2);
+            mainTile = MapBox.instance.GetTile(gateBottom.currentTile.pos.x, gateBottom.currentTile.pos.y);
+            centerTile = MapBox.instance.GetTile(gateTile.pos.x, gateTile.pos.y + 4);
+            
+            leftcorner = World.world.buildings.get(pData.leftcorner.id);//loadCastlePart(pData.leftcorner.asset_id, getTilefromData(pData.leftcorner), pData.leftcorner); //mainCity.getBuildingType("castle_topleftcorner");
+            rightcorner = World.world.buildings.get(pData.rightcorner.id);//loadCastlePart(pData.rightcorner.asset_id, getTilefromData(pData.rightcorner), pData.rightcorner); //mainCity.getBuildingType("castle_toprightcorner");
+            horizontalWall = World.world.buildings.get(pData.horizontalWall.id);//loadCastlePart(pData.horizontalWall.asset_id, getTilefromData(pData.horizontalWall), pData.horizontalWall); //mainCity.getBuildingType("castle_topwall");
+
+            var TileTypeFound = getSurroundTileType(mainTile);
+            oldTileType = TileTypeFound.Item1;
+            oldTopTile = TileTypeFound.Item2;
+            return this;
+        }
         public Castle loadBase(WorldTile curtile, City fixCity = null)
         {
             mainTile = curtile;
@@ -727,21 +781,23 @@ namespace NobleLife
                 }
         }
         public bool GateBroken => (gateBottom != null && gateBottom.data.health <= 0);
-        public bool GateClosed = false;
+        public bool GateClosed => (gateTile.main_type == TileLibrary.mountains); //false;
+        public bool Alert => (data.Alert);
         public void OpenGate()
         {
             if (GateClosed)
-            { 
-                gateTile.setTileTypes(oldTileType, oldTopTile);
-                GateClosed = false;
+            {
+                // Debug.Log(mainCity.name + " open gate");
+                MapAction.terraformTile(gateTile, oldTileType, oldTopTile);
             }
+            // else { Debug.Log(mainCity.name + " The fucking gate is not closed "); }
         }
         public void CloseGate()
         {
-            if (!GateClosed && !badCondition(gateBottom) && !GateBroken)
-            { 
-                gateTile.setTileType(TileLibrary.mountains);
-                GateClosed = true;
+            if (!GateClosed)
+            {
+                //Debug.Log(mainCity.name + " close gate");
+                MapAction.terraformTile(gateTile, TileLibrary.mountains, null);
             }
         }
         public static bool canAttackCastle(Building check)
@@ -797,55 +853,50 @@ namespace NobleLife
             for (int i = 1; i < 7; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x - i, mainTile.pos.y + 2);
-                if (build != null) build.setTileTypes(oldTileType, oldTopTile);
+                if (build != null) MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             for (int i = 1; i < 7; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x + i, mainTile.pos.y + 2);
-                if (build != null) build.setTileTypes(oldTileType, oldTopTile);
+                if (build != null) MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             //top left corner
             for (int i = 0; i < 7; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x - i, mainTile.pos.y + 10);
-                if (build != null) build.setTileTypes(oldTileType, oldTopTile);
+                if (build != null) MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             for (int i = 1; i < 10; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x - 5, mainTile.pos.y + i);
-                if (build != null) build.setTileTypes(oldTileType, oldTopTile);
+                if (build != null) MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             //top right corner
             for (int i = 0; i < 7; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x + i, mainTile.pos.y + 10);
-                if (build != null) build.setTileTypes(oldTileType, oldTopTile);
+                if (build != null) MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             for (int i = 1; i < 10; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x + 5, mainTile.pos.y + i);
-                if (build != null) build.setTileTypes(oldTileType, oldTopTile);
+                if (build != null) MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             // top horizontal wall
             for (int i = 0; i < 2; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x - i, mainTile.pos.y + 9);
-                if (build != null) build.setTileTypes(oldTileType, oldTopTile);
+                if (build != null) MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
         }
         public void destroy_castle()
         {
             Debug.Log("Destroy castle " + mainCity.data.name);
-            // gatebottom
-            for (int i = 1; i < 7; i++)
-            {
-                WorldTile build = MapBox.instance.GetTile(mainTile.pos.x - i, mainTile.pos.y + 2);
-                build.setTileTypes(oldTileType, oldTopTile);
-            }
-            for (int i = 1; i < 7; i++)
+            // Debug.Log(oldTopTile.id + " " + oldTileType.id);
+            for (int i = -6; i < 7; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x + i, mainTile.pos.y + 2);
-                build.setTileTypes(oldTileType, oldTopTile);
+                MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             gateBottom.clearCity();
             gateBottom.startRemove();
@@ -853,12 +904,12 @@ namespace NobleLife
             for (int i = 0; i < 7; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x - i, mainTile.pos.y + 10);
-                build.setTileTypes(oldTileType, oldTopTile);
+                MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             for (int i = 1; i < 10; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x - 5, mainTile.pos.y + i);
-                build.setTileTypes(oldTileType, oldTopTile);
+                MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             leftcorner.clearCity();
             leftcorner.startRemove();
@@ -866,12 +917,12 @@ namespace NobleLife
             for (int i = 0; i < 7; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x + i, mainTile.pos.y + 10);
-                build.setTileTypes(oldTileType, oldTopTile);
+                MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             for (int i = 1; i < 10; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x + 5, mainTile.pos.y + i);
-                build.setTileTypes(oldTileType, oldTopTile);
+                MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             rightcorner.clearCity();
             rightcorner.startRemove();
@@ -879,12 +930,13 @@ namespace NobleLife
             for (int i = 0; i < 2; i++)
             {
                 WorldTile build = MapBox.instance.GetTile(mainTile.pos.x - i, mainTile.pos.y + 9);
-                build.setTileTypes(oldTileType, oldTopTile);
+                MapAction.terraformTile(build, oldTileType, oldTopTile);
             }
             horizontalWall.clearCity();
             horizontalWall.startRemove();
 
-            gateTile.setTileTypes(oldTileType, oldTopTile);
+            // gateTile.setTileTypes(oldTileType, oldTopTile); // not gonna work as much as MapAction so :33
+            MapAction.terraformTile(gateTile, oldTileType, oldTopTile);
             //mainTile.setTileType(TileLibrary.shallow_waters);
 
             mainCity = null;
