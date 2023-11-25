@@ -38,7 +38,7 @@ namespace NobleLife
 
         public static Dictionary<City, Castle> castleList = new Dictionary<City, Castle>();
         public static ConstructionCost cost = new ConstructionCost(0, 0, 0, 100);
-        public static ConstructionCost repair_gate = new ConstructionCost(10,10,0,10);
+        public static ConstructionCost repair_gate = new ConstructionCost(5,5,5,10);
 
         public static void addNewCastle(WorldTile curTile, City fixCity = null)
         {
