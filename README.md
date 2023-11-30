@@ -19,5 +19,5 @@
 ## Attackers
 - Attackers with melee weapon will focus on castle gate
 
-# LICENSE
+# License
 https://github.com/PhongQuangDinh/Noble-s-Life/blob/77cf5548d11398a71cdeb5c81c150800101abc2e/LICENSE.md
