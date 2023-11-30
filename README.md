@@ -18,3 +18,5 @@
 - City buil-in defend mechanic, when regconize enemeies on the border of the city there will be evaluation for the commander of that army to raise alarm or not
 ## Attackers
 - Attackers with melee weapon will focus on castle gate
+
+# LICENSE
