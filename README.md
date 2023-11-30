@@ -20,4 +20,4 @@
 - Attackers with melee weapon will focus on castle gate
 
 # LICENSE
-https://github.com/PhongQuangDinh/Noble-s-Life/blob/e8dc0e5fc2dad4d8e40bbdcf56b97bc863e091ef/LICENSE.md
+https://github.com/PhongQuangDinh/Noble-s-Life/blob/77cf5548d11398a71cdeb5c81c150800101abc2e/LICENSE.md
