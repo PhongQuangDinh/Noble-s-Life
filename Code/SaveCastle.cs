@@ -22,8 +22,8 @@ namespace NobleLife
             MethodInfo patch;
 
             harmony = new Harmony(main.pluginGuid);
-            original = AccessTools.Method(typeof(SaveManager), "clickSaveSlot"); // update
-            patch = AccessTools.Method(typeof(SaveCastle), "clickSaveSlot_Postfix");
+            original = AccessTools.Method(typeof(SaveManager), "saveWorldToDirectory"); // update
+            patch = AccessTools.Method(typeof(SaveCastle), "saveWorldToDirectory_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
 
             harmony = new Harmony(main.pluginGuid);
@@ -40,6 +40,41 @@ namespace NobleLife
             original = AccessTools.Method(typeof(BuildingManager), "loadObject"); //
             patch = AccessTools.Method(typeof(SaveCastle), "loadBuildingObject_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
+
+            harmony = new Harmony(main.pluginGuid);
+            original = AccessTools.Method(typeof(MapIconLibrary), "checkBuildingLights"); //
+            patch = AccessTools.Method(typeof(SaveCastle), "checkBuildingLights_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+        }
+        public static bool checkBuildingLights_Prefix(Building pBuilding, Color pColor)
+        {
+            if (pBuilding.hasAnyStatusEffect())
+            {
+                foreach (StatusEffectData statusEffectData in pBuilding.activeStatus_dict.Values)
+                {
+                    if (statusEffectData.asset.draw_light_area)
+                    {
+                        MapIconLibrary.showLightAt(pBuilding.currentPosition, pColor, statusEffectData.asset.draw_light_size);
+                    }
+                }
+            }
+            if (!pBuilding.asset.draw_light_area)
+            {
+                return false;
+            }
+            if (!pBuilding.asset.draw_light_area)
+            {
+                return false;
+            }
+            if (!pBuilding.isUsable())
+            {
+                return false;
+            }
+            Vector3 v = pBuilding.currentPosition;
+            v.x += pBuilding.asset.draw_light_area_offset_x;
+            v.y += pBuilding.asset.draw_light_area_offset_y;
+            MapIconLibrary.showLightAt(v, pColor, pBuilding.asset.draw_light_size);
+            return false;
         }
         public static bool startLoadSlot_Prefix()
         {
@@ -61,20 +96,19 @@ namespace NobleLife
                 castleDataList.Add(castle.data);
             }
         }
-        public static void clickSaveSlot_Postfix()
+        public static void saveWorldToDirectory_Postfix(string pFolder, bool pCompress = true, bool pCheckFolder = true)
         {
             try
             {
                 prepareSave();
                 BinaryFormatter formatter = new BinaryFormatter();
-                FileStream fileStream = File.Create(SaveManager.currentSavePath + "nobleLife.wbox");
+                FileStream fileStream = File.Create(pFolder + "nobleLife.wbox");
                 formatter.Serialize(fileStream, castleDataList);
                 fileStream.Close();
             }
             catch(Exception e) 
             {
-                Debug.LogError("Error working on saving stuff" + e);
-                // Debug.Log("Error working on saving castle stuff");
+                Debug.LogError("Error working on saving stuff " + e);
             }
         }
         public static bool loadBuildingObject_Prefix(ref Building __result, BuildingData pData, Building pPrefab = null)
@@ -156,7 +190,8 @@ namespace NobleLife
                 foreach(var data in castleDataList)
                 {
                     var pCity = World.world.cities.get(data.mainCity_id);
-                    if (Castle.castleList.ContainsKey(pCity) || pCity == null) continue;
+                    if (pCity == null) continue;
+                    if (Castle.castleList.ContainsKey(pCity)) continue;
                     var newCastle = new Castle().loadFromData(data);
                     if (newCastle != null)
                         Castle.castleList.Add(pCity, newCastle);

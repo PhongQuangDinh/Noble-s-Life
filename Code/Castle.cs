@@ -42,6 +42,7 @@ namespace NobleLife
 
         public static void addNewCastle(WorldTile curTile, City fixCity = null)
         {
+            // clearAreaForCastle(curTile);
             if (curTile == null) return;
             if (curTile.zone.city != null || fixCity != null)
             {
@@ -703,6 +704,18 @@ namespace NobleLife
                 }
             return true;
         }
+        public static void clearAreaForCastle(WorldTile centerTile) // still under development
+        {
+            //if (centerTile.Type.damagedWhenWalked || centerTile.Type.liquid)
+            //    return;
+            for (int i = -6; i <= 6; i++)
+                for (int j = 2; j <= 10; j++)
+                {
+                    var build = MapBox.instance.GetTile(centerTile.pos.x + i, centerTile.pos.y + j);
+                    if (build == null) continue;
+                    MapAction.terraformMain(build, centerTile.main_type); // hmm wtf
+                }
+        }
         public void create_Castle(WorldTile curtile, City fixCity = null)
         {
             if (curtile == null) return;
@@ -773,7 +786,7 @@ namespace NobleLife
                 for (int j = 1; j < 10; j++)
                 {
                     WorldTile build = MapBox.instance.GetTile(curtile.pos.x + i, curtile.pos.y + j);
-                    if (build.Type.liquid || build.Type.damagedWhenWalked)
+                    if (build.Type.liquid || build.Type.damagedWhenWalked || build.main_type == TileLibrary.mountains)
                     {
                         MapAction.terraformMain(build, oldTileType);
                         MapAction.terraformTop(build, oldTopTile);

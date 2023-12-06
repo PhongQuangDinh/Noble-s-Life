@@ -140,6 +140,7 @@ namespace NobleLife
             Actor invader = null;
             foreach (var city in pKingdom.cities)
             {
+                if (city.army == null) continue;
                 Actor general = city.army.groupLeader;
                 if (general != null && general.data.alive)
                 {
