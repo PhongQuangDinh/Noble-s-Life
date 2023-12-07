@@ -782,8 +782,9 @@ namespace NobleLife
                 if (!ArcherPosTile.Contains(build)) ArcherPosTile.Add(build);
             }
             // make sure that theres no liquid tile within the castle interior
-            for (int i = -6; i <= 6; i++)
-                for (int j = 1; j < 10; j++)
+
+            for (int i = -4; i <= 4; i++)
+                for (int j = 3; j < 10; j++)
                 {
                     WorldTile build = MapBox.instance.GetTile(curtile.pos.x + i, curtile.pos.y + j);
                     if (build.Type.liquid || build.Type.damagedWhenWalked || build.main_type == TileLibrary.mountains)

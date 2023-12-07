@@ -46,8 +46,13 @@ namespace NobleLife
             patch = AccessTools.Method(typeof(SaveCastle), "checkBuildingLights_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
         }
+        // no idea why this bug happen so I have to put it here bruh ?????
         public static bool checkBuildingLights_Prefix(Building pBuilding, Color pColor)
         {
+            if (pBuilding == null) return false;
+            if (pBuilding.asset == null) return false;
+            if (!pBuilding.asset.draw_light_area) return false;
+
             if (pBuilding.hasAnyStatusEffect())
             {
                 foreach (StatusEffectData statusEffectData in pBuilding.activeStatus_dict.Values)

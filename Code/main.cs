@@ -506,6 +506,10 @@ namespace NobleLife
         }
         public void Update()
         {
+            // debug 
+            //if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.K))
+            //    Castle.addNewCastle(mouseTile, mouseTile.zone.city);
+
             //if (Input.GetKey(KeyCode.K))
             //{
             //    String text = (Castle.castleList.Count > 0) ? Castle.castleList.First().Value.mainCity.name + " + health: " + Castle.castleList.First().Value.data.curHealth : " Empty "; //;
