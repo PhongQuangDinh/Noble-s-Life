@@ -4,9 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using Unity;
 using UnityEngine;
 
@@ -15,6 +18,7 @@ namespace NobleLife
     public class SaveCastle
     {
         public static List<CastleData> castleDataList = new List<CastleData>();
+        public static string extension = "nobleLife.wbox";
         public static void Awake()
         {
             Harmony harmony;
@@ -107,7 +111,7 @@ namespace NobleLife
             {
                 prepareSave();
                 BinaryFormatter formatter = new BinaryFormatter();
-                FileStream fileStream = File.Create(pFolder + "nobleLife.wbox");
+                FileStream fileStream = File.Create(pFolder + extension);
                 formatter.Serialize(fileStream, castleDataList);
                 fileStream.Close();
             }
@@ -120,7 +124,7 @@ namespace NobleLife
         {
             // soon this function would be obsolete in the future when everyone get their own save file
             // this would be a little patch for now
-            string filePath = SaveManager.currentSavePath + "nobleLife.wbox";
+            string filePath = SaveManager.currentSavePath + extension;
             if (File.Exists(filePath))
             {
                 // Debug.Log("File save exists: " + filePath);
@@ -178,21 +182,19 @@ namespace NobleLife
         }
         public static void finishWorld_Postfix() // we can change the way we name the file using the mod version to avoid conflict and many things else
         {
-            string filePath = SaveManager.currentSavePath + "nobleLife.wbox";
-            if (!File.Exists(filePath))
+            string filePath = SaveManager.currentSavePath + extension;
+            if (!File.Exists(filePath) || filePath.Equals(extension))
             {
-                // Debug.Log("File save not exists: " + filePath);
-                // we will try to maybe create one or do something in case of suck things happen
                 return;
             }
-            Debug.Log("Try loading few more stuffs at the moment");
+
             try
             {
                 BinaryFormatter formatter = new BinaryFormatter();
                 FileStream fileStream = File.OpenRead(filePath);
                 castleDataList = (List<CastleData>)formatter.Deserialize(fileStream); // read and cast
 
-                foreach(var data in castleDataList)
+                foreach (var data in castleDataList)
                 {
                     var pCity = World.world.cities.get(data.mainCity_id);
                     if (pCity == null) continue;
@@ -202,10 +204,10 @@ namespace NobleLife
                         Castle.castleList.Add(pCity, newCastle);
                     // else Debug.Log("Lost one castle");
                 }
-                // Debug.Log("We have read like " + castleDataList.Count() + " castle datas");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
+                Debug.LogError(Assembly.GetExecutingAssembly().FullName);
                 Debug.LogError("Error loading stuff " + e);
                 Debug.Log("There's error while loading stuff you should remove this map I'm sorry the mod still in development");
                 // return to load object in a systematic way

@@ -1,0 +1,124 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|d:\\steam\\steamapps\\common\\worldbox\\mods\\noble\u0027s life\\code\\savecastle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|solutionrelative:savecastle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\behretreatcastle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|solutionrelative:behretreatcastle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|solutionrelative:main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\castle_patches.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|solutionrelative:castle_patches.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\castle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|solutionrelative:castle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\warband.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83FD18E9-7493-4D0A-AE82-C7E25EA00FBF}|NobleLife.csproj|solutionrelative:warband.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "main.cs",
+              "DocumentMoniker": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\main.cs",
+              "RelativeDocumentMoniker": "main.cs",
+              "ToolTip": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\main.cs",
+              "RelativeToolTip": "main.cs",
+              "ViewState": "AQIAACwAAAAAAAAAAAAgwDQAAAAgAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-06-20T07:44:41.058Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BehRetreatCastle.cs",
+              "DocumentMoniker": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\BehRetreatCastle.cs",
+              "RelativeDocumentMoniker": "BehRetreatCastle.cs",
+              "ToolTip": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\BehRetreatCastle.cs",
+              "RelativeToolTip": "BehRetreatCastle.cs",
+              "ViewState": "AQIAABMAAAAAAAAAAAAkwCMAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-10-15T17:02:18.261Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SaveCastle.cs",
+              "DocumentMoniker": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\SaveCastle.cs",
+              "RelativeDocumentMoniker": "SaveCastle.cs",
+              "ToolTip": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\SaveCastle.cs",
+              "RelativeToolTip": "SaveCastle.cs",
+              "ViewState": "AQIAAMIAAAAAAAAAAAAAANIAAAA7AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-10-08T14:01:47.948Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Warband.cs",
+              "DocumentMoniker": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\Warband.cs",
+              "RelativeDocumentMoniker": "Warband.cs",
+              "ToolTip": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\Warband.cs",
+              "RelativeToolTip": "Warband.cs",
+              "ViewState": "AQIAAHABAAAAAAAAAAD4v3YBAAANAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-06-20T07:44:41.107Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Castle_Patches.cs",
+              "DocumentMoniker": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\Castle_Patches.cs",
+              "RelativeDocumentMoniker": "Castle_Patches.cs",
+              "ToolTip": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\Castle_Patches.cs",
+              "RelativeToolTip": "Castle_Patches.cs",
+              "ViewState": "AQIAABIBAAAAAAAAAAD4vxwBAAANAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-06-20T07:44:40.941Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Castle.cs",
+              "DocumentMoniker": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\Castle.cs",
+              "RelativeDocumentMoniker": "Castle.cs",
+              "ToolTip": "D:\\Steam\\steamapps\\common\\worldbox\\Mods\\Noble\u0027s Life\\Code\\Castle.cs",
+              "RelativeToolTip": "Castle.cs",
+              "ViewState": "AQIAAB0CAAAAAAAAAAD4vw8BAAAoAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-06-20T07:44:41.107Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

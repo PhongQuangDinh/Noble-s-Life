@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 //using UnityEngine.EventSystems;
 //using UnityEngine.UI;
-using NCMS.Utils;
-using NCMS;
 using ai;
 
 using HarmonyLib;
@@ -23,17 +21,17 @@ using ReflectionUtility;
 using ModDeclaration;
 using System.IO;
 using UnityEngine.Assertions.Must;
-using NCMS.Extensions;
 using System.IO.Ports;
 using static UnityEngine.TouchScreenKeyboard;
 using System.Runtime.Remoting.Messaging;
 using ai.behaviours.conditions;
 //using static UnityEngine.UI.CanvasScaler;
+using NeoModLoader.api;
 
 namespace NobleLife
 {
-    [ModEntry]
-    public class main : MonoBehaviour
+    // [ModEntry]
+    public class main : BasicMod<main> // MonoBehaviour // old NCMS way
     {
         public static string pluginName = "ModdingCastle";
         public static string pluginGuid = "phong.worldbox.NobleLife";
@@ -45,7 +43,8 @@ namespace NobleLife
         public MovingDir direction = MovingDir.stop;
 
         public static string errorLog = "";
-        public void Awake() // first frame
+        // public void Awake() // first frame, NCMS way
+        protected override void OnModLoad()
         {
             SaveCastle.Awake();
             Warband.Awake();
@@ -148,6 +147,12 @@ namespace NobleLife
             original = AccessTools.Method(typeof(Building), "startDestroyBuilding");
             patch = AccessTools.Method(typeof(Castle_Patches), "startDestroyBuilding_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
+
+            // this is how I gonna prevent the Earthquake from shutting down my castle
+            //harmony = new Harmony(pluginGuid);
+            //original = AccessTools.Method(typeof(Building), "startRemove");
+            //patch = AccessTools.Method(typeof(Castle_Patches), "startRemove_Prefix");
+            //harmony.Patch(original, new HarmonyMethod(patch));
 
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(CitiesManager), "destroyCity"); //

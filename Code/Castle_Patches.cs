@@ -88,6 +88,11 @@ namespace NobleLife
             }
             return true;
         }
+        public static bool startRemove_Prefix(Building __instance) // hmm
+        {
+            if (!isCastlePart(__instance)) return true;
+            return false;
+        }
         public static bool startDestroyBuilding_Prefix(Building __instance)
         {
             if (!isCastlePart(__instance))

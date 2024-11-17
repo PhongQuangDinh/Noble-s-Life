@@ -152,9 +152,11 @@ namespace NobleLife
                     }
                 }
             }
+            if (__instance.army == null) return false; // I should have created but I refuse for better future
             int amount = invader.unit_group.countUnits() / 3;
             foreach (var men in invader.unit_group.units)
             {
+                if (men == null || !men.data.alive) continue;
                 if (amount > 0) // bruh problem around here
                 {
                     invader.unit_group.removeUnit(men);
